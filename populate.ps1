@@ -1,3 +1,5 @@
+$ProgressPreference = "SilentlyContinue"
+
 $base_uri = "https://drive.google.com/uc?export=download&id="
 $base_uri_doc = "https://docs.google.com/presentation/d"
 
