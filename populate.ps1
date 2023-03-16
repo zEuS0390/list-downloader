@@ -20,19 +20,25 @@ foreach ($file in $download_files) {
 		if (!($item -like '#*')) {
 
 			$item = ($item -split ':\s*')
-			$file_name = $item[0]
+			$file_path = $item[0]
 			$file_id = $item[1]
-			$file_ext_name = ($file_name -Split "\.")[1]
+			$file_ext_name = ($file_path -Split "\.")[1]
+
+			if ($file_path -match '\\\w+\.\w+\\?$') {	
+				$dirs = $file_path -Replace '\\\w+\.\w+\\?$' -Replace ""
+				New-Item -Path $dirs -Type "directory" -Force | Out-Null
+			}
+
 
 			if ($doc_ext_names -Contains $file_ext_name) {
 
-				Write-Output "Document: $($file_name)"
-				Invoke-WebRequest -Uri "$($base_uri_doc)/$($file_id)/export/$($file_ext_name)" -OutFile "$($file.Folder)\$($file_name)"
+				Write-Output "Document: $($file_path)"
+				Invoke-WebRequest -Uri "$($base_uri_doc)/$($file_id)/export/$($file_ext_name)" -OutFile "$($file.Folder)\$($file_path)"
 
 			} elseif ($video_ext_names -Contains $file_ext_name) {
 
-				Write-Output "Video: $($file_name)"
-				Invoke-WebRequest -Uri "$($base_uri)$($file_id)" -OutFile "$($file.Folder)\$($file_name)"
+				Write-Output "Video: $($file_path)"
+				Invoke-WebRequest -Uri "$($base_uri)$($file_id)" -OutFile "$($file.Folder)\$($file_path)"
 
 			}
 
