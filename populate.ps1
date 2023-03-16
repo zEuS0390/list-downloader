@@ -30,7 +30,7 @@ foreach ($file in $download_files) {
 			} elseif ($video_ext_names -Contains $file_ext_name) {
 
 				Write-Output "Video: $($file_name)"
-				Invoke-WebRequest -Uri "$($base_uri)$($file_id)" -OutFile $file_name
+				Invoke-WebRequest -Uri "$($base_uri)$($file_id)" -OutFile "$($file.Folder)\$($file_name)"
 
 			}
 
