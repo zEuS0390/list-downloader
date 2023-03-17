@@ -1,14 +1,26 @@
+param(
+	[string]$current_dir = ".",
+	[string]$base_uri = "https://drive.google.com/uc?export=download&id="
+)
+
 $ProgressPreference = "SilentlyContinue"
 
-$base_uri = "https://drive.google.com/uc?export=download&id="
-$base_uri_doc = "https://docs.google.com/presentation/d"
-
-$doc_ext_names = @("docx", "pptx")
-$video_ext_names = @("mp4", "avi", "3gp")
-
-$download_files = Get-ChildItem -Recurse | Where {! $_.PSIsContainer -and $_ -match "download_list.txt"} | Select Name, `
+$download_files = Get-ChildItem -Recurse $current_dir | Where {! $_.PSIsContainer -and $_ -match "download_list.txt"} | Select Name, `
   @{ n = 'Folder'; e = { Convert-Path $_.PSParentPath } }, `
   FullName
+
+function DownloadFile {
+	param(
+		[string]$Uri,
+		[string]$OutFile
+	)
+	if ($PSVersionTable.PSVersion.Major -lt 7) {
+		$client = New-Object System.Net.WebClient
+		$client.DownloadFile($Uri, $OutFile)
+	} else {
+		Invoke-WebRequest -Uri $Uri -OutFile $OutFile 
+	}
+}
 
 foreach ($file in $download_files) {
 
@@ -22,26 +34,14 @@ foreach ($file in $download_files) {
 			$item = ($item -split ':\s*')
 			$file_path = $item[0]
 			$file_id = $item[1]
-			$file_ext_name = ($file_path -Split "\.")[1]
 
 			if ($file_path -match '\\\w+\.\w+\\?$') {	
 				$dirs = $file_path -Replace '\\\w+\.\w+\\?$' -Replace ""
 				New-Item -Path $dirs -Type "directory" -Force | Out-Null
 			}
-
-
-			if ($doc_ext_names -Contains $file_ext_name) {
-
-				Write-Output "Document: $($file_path)"
-				Invoke-WebRequest -Uri "$($base_uri_doc)/$($file_id)/export/$($file_ext_name)" -OutFile "$($file.Folder)\$($file_path)"
-
-			} elseif ($video_ext_names -Contains $file_ext_name) {
-
-				Write-Output "Video: $($file_path)"
-				Invoke-WebRequest -Uri "$($base_uri)$($file_id)" -OutFile "$($file.Folder)\$($file_path)"
-
-			}
-
+			
+			Write-Output "File: $($file_path)"
+			DownloadFile "$($base_uri)$($file_id)" "$($file.Folder)\$($file_path)"
 		}
 
 	}
