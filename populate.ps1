@@ -37,9 +37,9 @@ foreach ($file in $download_files) {
 
 			if ($file_path -match '\\\w+\.\w+\\?$') {	
 				$dirs = $file_path -Replace '\\\w+\.\w+\\?$' -Replace ""
-				New-Item -Path $dirs -Type "directory" -Force | Out-Null
+				New-Item -Path "$($file.Folder)\$($dirs)" -Type "directory" -Force | Out-Null
 			}
-			
+
 			Write-Output "File: $($file_path)"
 			DownloadFile "$($base_uri)$($file_id)" "$($file.Folder)\$($file_path)"
 		}
@@ -47,3 +47,5 @@ foreach ($file in $download_files) {
 	}
 
 }
+
+Write-Output ''
