@@ -1,6 +1,5 @@
 param(
-	[string]$current_dir = ".",
-	[string]$base_uri = "https://drive.google.com/uc?export=download&id="
+	[string]$current_dir = ""
 )
 
 $ProgressPreference = "SilentlyContinue"
@@ -29,19 +28,24 @@ foreach ($file in $download_files) {
 
 	foreach ($item in $items) {
 
-		if (!($item -like '#*')) {
+		if (!($item -like '#*') -and !($item -like '\s*$?')) {
 
-			$item = ($item -split ':\s*')
+			$item = ($item -split '\s*=\s*')
 			$file_path = $item[0]
-			$file_id = $item[1]
+			$URI = $item[1]
 
 			if ($file_path -match '\\\w+\.\w+\\?$') {	
 				$dirs = $file_path -Replace '\\\w+\.\w+\\?$' -Replace ""
 				New-Item -Path "$($file.Folder)\$($dirs)" -Type "directory" -Force | Out-Null
 			}
 
-			Write-Output "File: $($file_path)"
-			DownloadFile "$($base_uri)$($file_id)" "$($file.Folder)\$($file_path)"
+			if ($item) {
+
+				Write-Output "File: $($file_path)"
+				DownloadFile $($URI) "$($file.Folder)\$($file_path)"
+
+			}
+
 		}
 
 	}
