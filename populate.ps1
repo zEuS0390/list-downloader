@@ -1,13 +1,17 @@
+# This script requires a directory to proceed
 param(
 	[string]$current_dir = ""
 )
 
+# Hide logs
 $ProgressPreference = "SilentlyContinue"
 
+# Recurse to all folders in a given location then filter and get the "download_list" text files
 $download_files = Get-ChildItem -Recurse $current_dir | Where {! $_.PSIsContainer -and $_ -match "download_list.txt"} | Select Name, `
   @{ n = 'Folder'; e = { Convert-Path $_.PSParentPath } }, `
   FullName
 
+# A function that downloads a file which requires URI and output file name
 function DownloadFile {
 	param(
 		[string]$Uri,
